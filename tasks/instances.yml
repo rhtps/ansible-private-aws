@@ -114,7 +114,7 @@
     device_name: "{{ item[1]['name'] }}"
   with_subelements:
     - "{{ ec2_public_instances.id }}"
-    - "{{ public_manifest['bastions']['volumes'] }}"
+    - "{{ public_manifest[0]['bastions']['volumes'] }}"
 
 - name: Create ec2 private instances on sidea
   ec2:
@@ -196,7 +196,7 @@
     device_name: "{{ item[1]['name'] }}"
   with_subelements:
     - "{{ ec2_private_instances.id }}"
-    - "{{ private_manifest['nodes']['volumes'] }}"
+    - "{{ private_manifest[0]['nodes']['volumes'] }}"
 
 - name: make list of internal ips
   set_fact:
