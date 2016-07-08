@@ -19,17 +19,6 @@ public_cidr_b: 10.0.0.0/16
 public_cidr_c_sidea: 10.0.1.0/24
 
 public_manifest:
-  - nodes:
-      role: node
-      count: 4
-      rootvol:
-        size: 10
-        type: gp2
-      volumes:
-        - xvdb:
-            name: /dev/xvdb
-            type: gp2
-            size: 100
   - bastions:
       role: bastion
       count: 1
@@ -49,7 +38,7 @@ public_manifest:
 private_manifest:
   - nodes:
       role: node
-      count: 4
+      count: 2
       rootvol:
         size: 10
         type: gp2

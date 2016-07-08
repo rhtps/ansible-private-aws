@@ -20,11 +20,13 @@
       resource_tags:
         env: "{{ cluster_id }}"
         Name: "{{ cluster_id }}-private-sidea"
+        parent_vpc: "{{ cluster_id }}-private"
     - cidr: "{{ private_cidr_c_sideb }}"
       az: "{{ ec2_region_sideb }}"
       resource_tags:
         env: "{{ cluster_id }}"
         Name: "{{ cluster_id }}-private-sideb"
+        parent_vpc: "{{ cluster_id }}-private"
     internet_gateway: no
     wait: yes
   register: private_vpc
@@ -45,6 +47,7 @@
       resource_tags:
         env: "{{ cluster_id }}"
         Name: "{{ cluster_id }}-public-sidea"
+        parent_vpc: "{{ cluster_id }}-public"
     internet_gateway: yes
     wait: yes
   register: public_vpc
