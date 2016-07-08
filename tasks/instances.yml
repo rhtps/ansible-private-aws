@@ -1,0 +1,202 @@
+---
+- ec2_vpc_subnet_facts:
+    filters:
+      "tag:Name": "{{ cluster_id }}-public"
+    region: "{{ ec2_region }}"
+  register: vpc_public_subnet
+
+- set_fact:
+    public_vpc_id: "{{ vpc_public_subnet.subnets[0].vpc_id }}"
+
+- set_fact:
+    public_subnet_id: "{{ vpc_public_subnet.subnets[0].id }}"
+
+- ec2_vpc_subnet_facts:
+    filters:
+      "tag:Name": "{{ cluster_id }}-private"
+    region: "{{ ec2_region }}"
+  register: vpc_private_subnet
+
+- set_fact:
+    private_vpc_id: "{{ vpc_private_subnet.subnets[0].vpc_id }}"
+
+- set_fact:
+    private_subnet_id: "{{ vpc_private_subnet.subnets[0].id }}"
+
+- name: Create public security group
+  ec2_group:
+    name: "{{ cluster_id }}-sg"
+    description: "{{ cluster_id }} public security group"
+    region: "{{ ec2_region }}"
+    vpc_id: "{{ public_vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 5902
+        to_port: 5902
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 8443
+        to_port: 8443
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+  register: public_security_group
+
+- name: Create private security group
+  ec2_group:
+    name: "{{ cluster_id }}-sg"
+    description: "{{ cluster_id }} private security group"
+    region: "{{ ec2_region }}"
+    vpc_id: "{{ private_vpc_id }}"
+    rules:
+      - proto: all
+        cidr_ip: "{{ public_cidr_b }}"
+      - proto: all
+        cidr_ip: "{{ private_cidr_b }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+  register: private_security_group
+
+- name: Create ec2 public instances
+  ec2:
+    image: "{{ ec2_image }}"
+    region: "{{ ec2_region }}"
+    key_name: "{{ ec2_keypair }}"
+    instance_type: "{{ ec2_instance_type }}"
+    group_id: "{{ public_security_group.group_id }}"
+    instance_tags:
+      Name: "{{ cluster_id }}-instance"
+      instance_role: "{{ item['role'] }}"
+      env: "{{ cluster_id }}"
+    exact_count: "{{ item['count'] }}"
+    count_tag:
+      Name: "{{ cluster_id }}-instance"
+      instance_role: "{{ item['role'] }}"
+      env: "{{ cluster_id }}"
+    wait: yes
+    volumes:
+      - volume_size: "{{ item['rootvol']['size'] }}"
+        device_type: "{{ item['rootvol']['type'] }}"
+        device_name: /dev/sda1
+        delete_on_termination: True
+    assign_public_ip: yes
+    vpc_subnet_id: "{{ public_subnet_id }}"
+  with_items:
+    - "{{ public_manifest }}"
+  register: ec2_public
+
+- set_fact:
+    ec2_public_instances:  "{{ ec2_public.instances }}"
+  when: ec2_public.instances is defined and ec2_public.instances
+
+- set_fact:
+    ec2_public_instances: "{{ ec2_public.tagged_instances }}"
+  when: ec2_public.tagged_instances is defined and ec2_public.tagged_instances
+
+- name: Add volumes to public node instances
+  ec2_vol:
+    instance: "{{ item[0] }}"
+    volume_size: "{{ item[1]['size'] }}"
+    volume_type: "{{ item[1]['type'] }}"
+    device_name: "{{ item[1]['name'] }}"
+  with_subelements:
+    - "{{ ec2_public.id }}"
+    - "{{ public_manifest['nodes']['volumes'] }}"
+    
+- name: Add volumes to public bastion instances
+  ec2_vol:
+    instance: "{{ item[0] }}"
+    volume_size: "{{ item[1]['size'] }}"
+    volume_type: "{{ item[1]['type'] }}"
+    device_name: "{{ item[1]['name'] }}"
+  with_subelements:
+    - "{{ ec2_public.id }}"
+    - "{{ public_manifest['bastions']['volumes'] }}"
+
+- name: Create ec2 private instances
+  ec2:
+    image: "{{ ec2_image }}"
+    region: "{{ ec2_region }}"
+    key_name: "{{ ec2_keypair }}"
+    instance_type: "{{ ec2_instance_type }}"
+    group_id: "{{ public_security_group.group_id }}"
+    instance_tags:
+      Name: "{{ cluster_id }}-instance"
+      instance_role: "{{ item['role'] }}"
+      env: "{{ cluster_id }}"
+    exact_count: "{{ item['count'] }}"
+    count_tag:
+      Name: "{{ cluster_id }}-instance"
+      instance_role: "{{ item['role'] }}"
+      env: "{{ cluster_id }}"
+    wait: yes
+    volumes:
+      - volume_size: "{{ item['rootvol']['size'] }}"
+        device_type: "{{ item['rootvol']['type'] }}"
+        device_name: /dev/sda1
+        delete_on_termination: True
+    assign_public_ip: yes
+    vpc_subnet_id: "{{ public_subnet_id }}"
+  with_items:
+    - "{{ public_manifest }}"
+  register: ec2_private
+
+- set_fact:
+    ec2_private_instances:  "{{ ec2_private.instances }}"
+  when: ec2_private.instances is defined and ec2_private.instances
+
+- set_fact:
+    ec2_private_instances: "{{ ec2_private.tagged_instances }}"
+  when: ec2_private.tagged_instances is defined and ec2_private.tagged_instances
+
+- name: Add volumes to private node instances
+  ec2_vol:
+    instance: "{{ item[0] }}"
+    volume_size: "{{ item[1]['size'] }}"
+    volume_type: "{{ item[1]['type'] }}"
+    device_name: "{{ item[1]['name'] }}"
+  with_subelements:
+    - "{{ ec2_private.id }}"
+    - "{{ private_manifest['nodes']['volumes'] }}"
+
+- name: make list of internal ips
+  set_fact:
+    private_ip_item: "{{ item.private_ip }}"
+  with_items:
+    - "{{ ec2_public_instances }}"
+    - "{{ ec2_private_instances }}"
+  register: private_ips_result
+
+- name: make a better list of internal ips
+  set_fact:
+    private_ips: "{{ private_ips_result.results | map(attribute='ansible_facts.private_ip_item') | list }}"
+
+- name: add instances to host group
+  add_host: name={{ item.public_dns_name }} groups=private_aws
+  with_items:
+    - "{{ ec2_public_instances }}"
+    - "{{ ec2_private_instances }}"
+
+- name: Wait for SSH to come up
+  wait_for: host={{ item.public_dns_name }} port=22 delay=0 timeout=600 state=started
+  with_items:
+    - "{{ ec2_public_instances }}"
+
+- name: Wait for successful SSH
+  command: "ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o ConnectTimeout=10 -o UserKnownHostsFile=/dev/null centos@{{ item.public_dns_name }} echo host is up"
+  with_items:
+    - "{{ ec2_public_instances }}"
+  register: result
+  until: result.rc == 0
+  retries: 60
+  delay: 60
