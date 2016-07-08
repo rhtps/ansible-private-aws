@@ -112,6 +112,7 @@
     volume_size: "{{ item[1]['size'] }}"
     volume_type: "{{ item[1]['type'] }}"
     device_name: "{{ item[1]['name'] }}"
+    delete_on_termination: yes
   with_subelements:
     - "{{ ec2_public_instances.id }}"
     - "{{ public_manifest[0]['bastions']['volumes'] }}"
@@ -194,6 +195,7 @@
     volume_size: "{{ item[1]['size'] }}"
     volume_type: "{{ item[1]['type'] }}"
     device_name: "{{ item[1]['name'] }}"
+    delete_on_termination: yes
   with_subelements:
     - "{{ ec2_private_instances.id }}"
     - "{{ private_manifest[0]['nodes']['volumes'] }}"
