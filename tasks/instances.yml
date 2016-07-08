@@ -95,7 +95,7 @@
     assign_public_ip: yes
     vpc_subnet_id: "{{ public_subnet_id }}"
   with_items:
-    - "{{ public_manifest }}"
+    - "{{ public_manifest[0]['bastions'] }}"
   register: ec2_public
 
 - set_fact:
@@ -141,7 +141,7 @@
     assign_public_ip: yes
     vpc_subnet_id: "{{ private_subnet_id_sidea }}"
   with_items:
-    - "{{ private_manifest }}"
+    - "{{ private_manifest[0]['nodes'] }}"
   register: ec2_private_sidea
 
 - name: Create ec2 private instances on sideb
