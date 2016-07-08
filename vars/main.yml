@@ -1,7 +1,9 @@
 ---
 # vars file for private-aws
 
-cluster_id: "{{ environment }}"
+cluster_id: "{{ lookup('env','environment') }}"
+r53_zone: "{{ lookup('env','r53_zone') }}"
+ec2_keypair: "{{ lookup('env','ec2_keypair') }}"
 
 ec2_instance_count: 5
 
