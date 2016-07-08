@@ -1,6 +1,8 @@
 ---
 # vars file for private-aws
 
+cluster_id: "{{ environment }}"
+
 ec2_instance_count: 5
 
 ec2_region: us-east-1
