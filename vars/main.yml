@@ -16,7 +16,7 @@ private_cidr_c_sidea: 192.168.1.0/24
 private_cidr_c_sideb: 192.168.2.0/24
 
 public_cidr_b: 10.0.0.0/16
-public_cidr_b_sidea: 10.0.1.0/24
+public_cidr_c_sidea: 10.0.1.0/24
 
 public_manifest:
   - nodes:
