@@ -13,7 +13,7 @@
 
 - ec2_vpc_subnet_facts:
     filters:
-      "tag:parent": "{{ cluster_id }}-private"
+      "tag:parent_vpc": "{{ cluster_id }}-private"
     region: "{{ ec2_region }}"
   register: vpc_private_subnet
 
