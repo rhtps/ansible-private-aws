@@ -41,7 +41,7 @@
     region: "{{ ec2_region }}"
     subnets:
     - cidr: "{{ public_cidr_c_sidea }}"
-      az: "{{ ec2_public_az }}"
+      az: "{{ ec2_region_sidea }}"
       resource_tags:
         env: "{{ cluster_id }}"
         Name: "{{ cluster_id }}-public-sidea"
