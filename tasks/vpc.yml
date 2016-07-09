@@ -1,8 +1,9 @@
 ---
-- name: create the Route 53 hosted zone
-  route53_zone:
-    zone: "{{ r53_zone }}"
-    state: present
+#- name: create the Route 53 hosted zone
+#  route53_zone:
+#    zone: "{{ r53_zone }}"
+#    state: present
+# TODO: unfuck the above
 
 - name: Create ec2 private vpc
   ec2_vpc:

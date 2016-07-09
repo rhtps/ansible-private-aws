@@ -10,6 +10,10 @@
 
 - include: vpc/get_ids_extant.yml
   when: not create_vpcs
+  # Sets the following facts:
+  #   public_subnet_id
+  #   private_subnet_id_sidea
+  #   private_subnet_id_sideb
 
 - name: Create public security group
   ec2_group:
