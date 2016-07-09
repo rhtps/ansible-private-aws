@@ -59,135 +59,179 @@
         cidr_ip: 0.0.0.0/0
   register: private_security_group
 
-- name: Create ec2 public instances
-  ec2:
-    image: "{{ ec2_image }}"
-    region: "{{ ec2_region }}"
-    key_name: "{{ ec2_keypair }}"
-    instance_type: "{{ ec2_instance_type }}"
-    group_id: "{{ public_security_group.group_id }}"
-    instance_tags:
-      Name: "{{ cluster_id }}-instance"
-      instance_role: "{{ item['role'] }}"
-      env: "{{ cluster_id }}"
-    exact_count: "{{ item['count'] }}"
-    count_tag:
-      Name: "{{ cluster_id }}-instance"
-      instance_role: "{{ item['role'] }}"
-      env: "{{ cluster_id }}"
-    wait: yes
-    volumes:
-      - volume_size: "{{ item['rootvol']['size'] }}"
-        device_type: "{{ item['rootvol']['type'] }}"
-        device_name: /dev/sda1
-        delete_on_termination: True
-    assign_public_ip: yes
-    vpc_subnet_id: "{{ public_subnet_id }}"
-  with_items:
-    - "{{ public_manifest[0]['bastions'] }}"
-  register: ec2_public
+- name: Create ec2 public bastion instances
+  include: instances/create_instance.yml
+  vars:
+    my_group_id: "{{ public_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sidea"
+    my_vpc_subnet_id: "{{ public_subnet_id }}"
+    my_items: "{{ public_manifest['bastions'] }}"
 
 - set_fact:
-    ec2_public_instances:  "{{ ec2_public.instances }}"
-  when: ec2_public.instances is defined and ec2_public.instances
+    ec2_public_instances:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
 
 - set_fact:
-    ec2_public_instances: "{{ ec2_public.tagged_instances }}"
-  when: ec2_public.tagged_instances is defined and ec2_public.tagged_instances
+    ec2_public_instances: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
 
 - name: Add volumes to public bastion instances
   ec2_vol:
-    instance: "{{ item[0] }}"
+    region: "{{ ec2_region }}"
+    instance: "{{ item[0].id }}"
     volume_size: "{{ item[1]['size'] }}"
     volume_type: "{{ item[1]['type'] }}"
     device_name: "{{ item[1]['name'] }}"
     delete_on_termination: yes
-  with_subelements:
-    - "{{ ec2_public_instances.id }}"
-    - "{{ public_manifest[0]['bastions']['volumes'] }}"
+  with_nested:
+    - "{{ ec2_public_instances }}"
+    - "{{ public_manifest['bastions']['volumes'] }}"
 
-- name: Create ec2 private instances on sidea
-  ec2:
-    image: "{{ ec2_image }}"
-    region: "{{ ec2_region }}"
-    key_name: "{{ ec2_keypair }}"
-    instance_type: "{{ ec2_instance_type }}"
-    group_id: "{{ private_security_group.group_id }}"
-    instance_tags:
-      Name: "{{ cluster_id }}-instance"
-      instance_role: "{{ item['role'] }}"
-      env: "{{ cluster_id }}"
-    exact_count: "{{ item['count'] }}"
-    count_tag:
-      Name: "{{ cluster_id }}-instance"
-      instance_role: "{{ item['role'] }}"
-      env: "{{ cluster_id }}"
-    wait: yes
-    volumes:
-      - volume_size: "{{ item['rootvol']['size'] }}"
-        device_type: "{{ item['rootvol']['type'] }}"
-        device_name: /dev/sda1
-        delete_on_termination: True
-    assign_public_ip: yes
-    vpc_subnet_id: "{{ private_subnet_id_sidea }}"
-  with_items:
-    - "{{ private_manifest[0]['nodes'] }}"
-  register: ec2_private_sidea
+#- name: Create ec2 private instances on sidea
+#  ec2:
+#    image: "{{ ec2_image }}"
+#    region: "{{ ec2_region }}"
+#    key_name: "{{ ec2_keypair }}"
+#    instance_type: "{{ ec2_instance_type }}"
+#    group_id: "{{ private_security_group.group_id }}"
+#    instance_tags:
+#      Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+#      instance_role: "{{ item['role'] }}"
+#      env: "{{ cluster_id }}"
+#      side: "sidea"
+#    exact_count: "{{ item['count'] }}"
+#    count_tag:
+#      Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+#      instance_role: "{{ item['role'] }}"
+#      env: "{{ cluster_id }}"
+#      side: "sidea"
+#    wait: yes
+#    volumes:
+#      - volume_size: "{{ item['rootvol']['size'] }}"
+#        device_type: "{{ item['rootvol']['type'] }}"
+#        device_name: /dev/sda1
+#        delete_on_termination: True
+#    assign_public_ip: yes
+#    vpc_subnet_id: "{{ private_subnet_id_sidea }}"
+#  with_items:
+#    - "{{ private_manifest['nodes'] }}"
+#  register: ec2_private_sidea
 
-- name: Create ec2 private instances on sideb
-  ec2:
-    image: "{{ ec2_image }}"
-    region: "{{ ec2_region }}"
-    key_name: "{{ ec2_keypair }}"
-    instance_type: "{{ ec2_instance_type }}"
-    group_id: "{{ private_security_group.group_id }}"
-    instance_tags:
-      Name: "{{ cluster_id }}-instance"
-      instance_role: "{{ item['role'] }}"
-      env: "{{ cluster_id }}"
-    exact_count: "{{ item['count'] }}"
-    count_tag:
-      Name: "{{ cluster_id }}-instance"
-      instance_role: "{{ item['role'] }}"
-      env: "{{ cluster_id }}"
-    wait: yes
-    volumes:
-      - volume_size: "{{ item['rootvol']['size'] }}"
-        device_type: "{{ item['rootvol']['type'] }}"
-        device_name: /dev/sda1
-        delete_on_termination: True
-    assign_public_ip: yes
-    vpc_subnet_id: "{{ private_subnet_id_sideb }}"
-  with_items:
-    - "{{ private_manifest }}"
-  register: ec2_private_sideb
+- name: Create ec2 private nodes on side a
+  include: instances/create_instance.yml
+  vars:
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sidea"
+    my_vpc_subnet_id: "{{ private_subnet_id_sidea }}"
+    my_items: "{{ private_manifest['nodes'] }}"
 
 - set_fact:
-    ec2_private_instances_sidea:  "{{ ec2_private_sidea.instances }}"
-  when: ec2_private_sidea.instances is defined and ec2_private_sidea.instances
+    ec2_private_nodes_sidea:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
 
 - set_fact:
-    ec2_private_instances_sidea: "{{ ec2_private_sidea.tagged_instances }}"
-  when: ec2_private_sidea.tagged_instances is defined and ec2_private_sidea.tagged_instances
+    ec2_private_nodes_sidea: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
+- name: Create ec2 private nodes on side b
+  include: instances/create_instance.yml
+  vars:
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sideb"
+    my_vpc_subnet_id: "{{ private_subnet_id_sideb }}"
+    my_items: "{{ private_manifest['nodes'] }}"
+
+- set_fact:
+    ec2_private_nodes_sideb:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_nodes_sideb: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
+
+#- name: Create ec2 private instances on sideb
+#  ec2:
+#    image: "{{ ec2_image }}"
+#    region: "{{ ec2_region }}"
+#    key_name: "{{ ec2_keypair }}"
+#    instance_type: "{{ ec2_instance_type }}"
+#    group_id: "{{ private_security_group.group_id }}"
+#    instance_tags:
+#      Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+#      instance_role: "{{ item['role'] }}"
+#      env: "{{ cluster_id }}"
+#      side: "sideb"
+#    exact_count: "{{ item['count'] }}"
+#    count_tag:
+#      Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+#      instance_role: "{{ item['role'] }}"
+#      env: "{{ cluster_id }}"
+#      side: "sideb"
+#    wait: yes
+#    volumes:
+#      - volume_size: "{{ item['rootvol']['size'] }}"
+#        device_type: "{{ item['rootvol']['type'] }}"
+#        device_name: /dev/sda1
+#        delete_on_termination: True
+#    assign_public_ip: yes
+#    vpc_subnet_id: "{{ private_subnet_id_sideb }}"
+#  with_items:
+#    - "{{ private_manifest['nodes'] }}"
+#  register: ec2_private_sideb
+#
+#- set_fact:
+#    ec2_private_instances_sidea:  "{{ ec2_private_sidea.results[0].instances }}"
+#  when: ec2_private_sidea.results[0].instances is defined and ec2_private_sidea.results[0].instances
+#
+#- set_fact:
+#    ec2_private_instances_sidea: "{{ ec2_private_sidea.results[0].tagged_instances }}"
+#  when: ec2_private_sidea.results[0].tagged_instances is defined and ec2_private_sidea.results[0].tagged_instances
+#
+#- set_fact:
+#    ec2_private_instances_sideb:  "{{ ec2_private_sideb.results[0].instances }}"
+#  when: ec2_private_sideb.results[0].instances is defined and ec2_private_sideb.results[0].instances
+#
+#- set_fact:
+#    ec2_private_instances_sideb: "{{ ec2_private_sideb.results[0].tagged_instances }}"
+#  when: ec2_private_sideb.results[0].tagged_instances is defined and ec2_private_sideb.results[0].tagged_instances
+
+#- set_fact:
+#    ec2_private_instances_sidea:  "{{ ec2_private_sidea.instances }}"
+#  when: ec2_private_sidea.instances is defined and ec2_private_sidea.instances
+#
+#- set_fact:
+#    ec2_private_instances_sidea: "{{ ec2_private_sidea.tagged_instances }}"
+#  when: ec2_private_sidea.tagged_instances is defined and ec2_private_sidea.tagged_instances
 
 - set_fact: ec2_private_instances_list="{{ item }}"
   with_items:
-    - "{{ ec2_private_instances_sidea }}"
-    - "{{ ec2_private_instances_sideb }}"
+    - "{{ ec2_private_nodes_sidea }}"
+    - "{{ ec2_private_nodes_sideb }}"
   register: ec2_private_instances_list_result
 
-- set_fact: ec2_private_instances="{{ ec2_private_instances_list_results.results | map(attribute='ansible_facts.ec2_private_instances_list') | list }}"
+- set_fact: ec2_private_instances="{{ ec2_private_instances_list_result.results | map(attribute='ansible_facts.ec2_private_instances_list') | list }}"
 
 - name: Add volumes to private node instances
   ec2_vol:
-    instance: "{{ item[0] }}"
+    instance: "{{ item[0].id }}"
+    region: "{{ ec2_region }}"
     volume_size: "{{ item[1]['size'] }}"
     volume_type: "{{ item[1]['type'] }}"
     device_name: "{{ item[1]['name'] }}"
     delete_on_termination: yes
-  with_subelements:
-    - "{{ ec2_private_instances.id }}"
-    - "{{ private_manifest[0]['nodes']['volumes'] }}"
+  with_nested:
+    - "{{ ec2_private_instances }}"
+    - "{{ private_manifest['nodes']['volumes'] }}"
 
 - name: make list of internal ips
   set_fact:
@@ -207,7 +251,7 @@
     - "{{ ec2_public_instances }}"
     - "{{ ec2_private_instances }}"
 
-- name: Wait for SSH to come up
+- name: Wait for SSH to come up on public instances
   wait_for: host={{ item.public_dns_name }} port=22 delay=0 timeout=600 state=started
   with_items:
     - "{{ ec2_public_instances }}"

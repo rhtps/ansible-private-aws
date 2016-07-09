@@ -1,9 +1,9 @@
 ---
 # vars file for private-aws
 
-cluster_id: "{{ lookup('env','environment') }}"
-r53_zone: "{{ lookup('env','r53_zone') }}"
-ec2_keypair: "{{ lookup('env','ec2_keypair') }}"
+#cluster_id: "{{ lookup('env','environment') }}"
+#r53_zone: "{{ lookup('env','r53_zone') }}"
+#ec2_keypair: "{{ lookup('env','ec2_keypair') }}"
 
 ec2_instance_count: 5
 
@@ -21,31 +21,28 @@ public_cidr_b: 10.0.0.0/16
 public_cidr_c_sidea: 10.0.1.0/24
 
 public_manifest:
-  - bastions:
-      role: bastion
-      count: 1
-      rootvol:
-        size: 10
+  bastions:
+    role: bastion
+    count: 1
+    rootvol:
+      size: 10
+      type: gp2
+    volumes:
+      - name: /dev/xvdb
         type: gp2
-      volumes:
-        - xvdb:
-            name: /dev/xvdb
-            type: gp2
-            size: 100
-        - xvdc:
-            name: /dev/xvdc
-            type: gp2
-            size: 100
+        size: 100
+      - name: /dev/xvdc
+        type: gp2
+        size: 100
 
 private_manifest:
-  - nodes:
-      role: node
-      count: 2
-      rootvol:
-        size: 10
+  nodes:
+    role: node
+    count: 4
+    rootvol:
+      size: 10
+      type: gp2
+    volumes:
+      - name: /dev/xvdb
         type: gp2
-      volumes:
-        - xvdb:
-            name: /dev/xvdb
-            type: gp2
-            size: 100
+        size: 100
