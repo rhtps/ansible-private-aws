@@ -3,7 +3,10 @@
     filters:
       "tag:Name": "{{ cluster_id }}-public-sidea"
     region: "{{ ec2_region }}"
+  when:
   register: vpc_public_subnet
+
+# TODO left off here
 
 - set_fact:
     public_vpc_id: "{{ vpc_public_subnet.subnets[0].vpc_id }}"
