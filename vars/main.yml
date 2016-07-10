@@ -34,6 +34,9 @@ public_manifest:
       - name: /dev/xvdc
         type: gp2
         size: 100
+      - name: /dev/xvdd
+        type: gp2
+        size: 100
 
 private_manifest:
   nodes:
