@@ -130,10 +130,50 @@
     ec2_private_nodes_sideb: "{{ ec2.results[0].tagged_instances }}"
   when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
 
+- name: Create ec2 private bind on side a
+  include: instances/create_instance.yml
+  vars:
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sidea"
+    my_vpc_subnet_id: "{{ private_subnet_id_sidea }}"
+    my_items: "{{ private_manifest['bind'] }}"
+
+- set_fact:
+    ec2_private_bind_sidea:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_bind_sidea: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
+- name: Create ec2 private bind on side b
+  include: instances/create_instance.yml
+  vars:
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sideb"
+    my_vpc_subnet_id: "{{ private_subnet_id_sideb }}"
+    my_items: "{{ private_manifest['bind'] }}"
+
+- set_fact:
+    ec2_private_bind_sideb:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_bind_sideb: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
 - set_fact: ec2_private_instances_list="{{ item }}"
   with_items:
     - "{{ ec2_private_nodes_sidea }}"
     - "{{ ec2_private_nodes_sideb }}"
+    - "{{ ec2_private_bind_sidea }}"
+    - "{{ ec2_private_bind_sideb }}"
   register: ec2_private_instances_list_result
 
 - set_fact: ec2_private_instances="{{ ec2_private_instances_list_result.results | map(attribute='ansible_facts.ec2_private_instances_list') | list }}"

@@ -49,3 +49,9 @@ private_manifest:
       - name: /dev/xvdb
         type: gp2
         size: 100
+  bind:
+    role: bind
+    count: 1
+    rootvol:
+      size: 10
+      type: gp2
