@@ -21,6 +21,24 @@
 {{ ip.private_ip }}
 {% endfor %}
 
+[master-nodes]
+{% for ip in ec2_private_nodes_sidea | list[:1] %}
+{{ ip.private_ip }}
+{% endfor %}
+{% for ip in ec2_private_nodes_sideb | list[:1] %}
+{{ ip.private_ip }}
+{% endfor %}
+
+[master_sidea]
+{% for ip in ec2_private_nodes_sidea | list[:1] %}
+{{ ip.private_ip }}
+{% endfor %}
+
+[master_sideb]
+{% for ip in ec2_private_nodes_sideb | list[:1] %}
+{{ ip.private_ip }}
+{% endfor %}
+
 [bind]
 {% for ip in ec2_private_bind_sidea %}
 {{ ip.private_ip }}
