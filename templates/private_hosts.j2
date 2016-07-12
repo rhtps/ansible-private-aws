@@ -1,40 +1,40 @@
 [all]
-{% for ip in ec2_private_instances.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_instances %}
+{{ ip.private_ip }}
 {% endfor %}
 
 [nodes]
-{% for ip in ec2_private_nodes_sidea.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_nodes_sidea %}
+{{ ip.private_ip }}
 {% endfor %}
-{% for ip in ec2_private_nodes_sideb.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_nodes_sideb %}
+{{ ip.private_ip }}
 {% endfor %}
 
 [nodes_sidea]
-{% for ip in ec2_private_nodes_sidea.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_nodes_sidea %}
+{{ ip.private_ip }}
 {% endfor %}
 
 [nodes_sideb]
-{% for ip in ec2_private_nodes_sideb.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_nodes_sideb %}
+{{ ip.private_ip }}
 {% endfor %}
 
 [bind]
-{% for ip in ec2_private_bind_sidea.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_bind_sidea %}
+{{ ip.private_ip }}
 {% endfor %}
-{% for ip in ec2_private_bind_sideb.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_bind_sideb %}
+{{ ip.private_ip }}
 {% endfor %}
 
 [bind_sidea]
-{% for ip in ec2_private_bind_sidea.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_bind_sidea %}
+{{ ip.private_ip }}
 {% endfor %}
 
 [bind_sideb]
-{% for ip in ec2_private_bind_sideb.private_ip %}
-{{ ip }}
+{% for ip in ec2_private_bind_sideb %}
+{{ ip.private_ip }}
 {% endfor %}
