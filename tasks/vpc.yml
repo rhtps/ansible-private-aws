@@ -85,7 +85,8 @@
       - "{{ private_vpc.subnets.0.id }}"
       - "{{ private_vpc.subnets.1.id }}"
     routes:
-      - dest: "{{ private_cidr_b }}"
+#      - dest: "{{ private_cidr_b }}"
+      - dest: "{{ public_cidr_b }}"
         vpc_peering_connection_id: "{{ vpc_peer.peering_id }}"
   register: private_route_table
 
@@ -99,7 +100,8 @@
     subnets:
       - "{{ public_vpc.subnets.0.id }}"
     routes:
-      - dest: "{{ public_cidr_b }}"
+#      - dest: "{{ public_cidr_b }}"
+      - dest: "{{ private_cidr_b }}"
         vpc_peering_connection_id: "{{ vpc_peer.peering_id }}"
       - dest: 0.0.0.0/0
         gateway_id: "{{ public_vpc.igw_id }}"
