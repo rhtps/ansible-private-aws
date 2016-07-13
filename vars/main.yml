@@ -38,10 +38,21 @@ public_manifest:
         type: gp2
         size: 100
 
+# TODO right now masters get the same volumes as nodes. master volumes dict is ignored
 private_manifest:
+  masters:
+    role: master
+    count: 2
+    rootvol:
+      size: 10
+      type: gp2
+    volumes:
+      - name: /dev/xvdb
+        type: gp2
+        size: 100
   nodes:
     role: node
-    count: 4
+    count: 2
     rootvol:
       size: 10
       type: gp2
