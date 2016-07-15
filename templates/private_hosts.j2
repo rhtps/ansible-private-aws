@@ -21,7 +21,7 @@
 {{ ip.private_ip }}
 {% endfor %}
 
-[master-nodes]
+[masters]
 {% for ip in ec2_private_masters_sidea %}
 {{ ip.private_ip }}
 {% endfor %}
