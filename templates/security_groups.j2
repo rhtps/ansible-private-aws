@@ -17,20 +17,16 @@ security_rules:
     to_port: 443
     cidr_ip: 192.168.0.0/16
   - proto: tcp
+    from_port: 5000
+    to_port: 5000
+    cidr_ip: 192.168.0.0/16
+  - proto: tcp
     from_port: 8443
     to_port: 8443
     cidr_ip: 0.0.0.0/0
-{% for instance in ec2_public_instances %}
-  - proto: all
+  - proto: icmp
     from_port: -1
     to_port: -1
-    cidr_ip: {{ instance.public_dns_name.split('.')[0].replace('ec2-','').replace('-','.') }}/32
-{% endfor %}
-{% for instance in ec2_private_instances %}
-  - proto: all
-    from_port: -1
-    to_port: -1
-    cidr_ip: {{ instance.public_dns_name.split('.')[0].replace('ec2-','').replace('-','.') }}/32
-{% endfor %}
+    cidr_ip: 192.168.0.0/16
   - proto: all
     group_name: "{{ cluster_id }}-sg"
