@@ -3,6 +3,11 @@
 {{ ip.private_ip }}
 {% endfor %}
 
+[bastions]
+{% for ip in ec2_public_instances %}
+{{ ip.private_ip }}
+{% endfor %}
+
 [nodes]
 {% for ip in ec2_private_nodes_sidea %}
 {{ ip.private_ip }}
