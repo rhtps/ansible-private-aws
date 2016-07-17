@@ -124,10 +124,10 @@
     dest: ./ssh_bastion.cfg
 
 # TODO when I'm less lazy, paramaterize this better and repeat less code
-# TODO also, instance size should come from the manifest dicts so they're not all super large
 - name: Create ec2 private masters on side a
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ private_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
@@ -147,6 +147,7 @@
 - name: Create ec2 private masters on side b
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ private_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
@@ -166,6 +167,7 @@
 - name: Create ec2 private nodes on side a
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ private_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
@@ -185,6 +187,7 @@
 - name: Create ec2 private nodes on side b
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ private_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
@@ -204,6 +207,7 @@
 - name: Create ec2 private bind on side a
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ private_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
@@ -223,6 +227,7 @@
 - name: Create ec2 private bind on side b
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ private_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
@@ -239,6 +244,86 @@
     ec2_private_bind_sideb: "{{ ec2.results[0].tagged_instances }}"
   when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
 
+- name: Create ec2 private etcd on side a
+  include: instances/create_instance.yml
+  vars:
+    my_type: "{{ item['type'] }}"
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sidea"
+    my_vpc_subnet_id: "{{ private_subnet_id_sidea }}"
+    my_items: "{{ private_manifest['etcd'] }}"
+
+- set_fact:
+    ec2_private_etcd_sidea:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_etcd_sidea: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
+- name: Create ec2 private etcd on side b
+  include: instances/create_instance.yml
+  vars:
+    my_type: "{{ item['type'] }}"
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sideb"
+    my_vpc_subnet_id: "{{ private_subnet_id_sideb }}"
+    my_items: "{{ private_manifest['etcd'] }}"
+
+- set_fact:
+    ec2_private_etcd_sideb:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_etcd_sideb: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
+- name: Create ec2 private lb on side a
+  include: instances/create_instance.yml
+  vars:
+    my_type: "{{ item['type'] }}"
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sidea"
+    my_vpc_subnet_id: "{{ private_subnet_id_sidea }}"
+    my_items: "{{ private_manifest['lb'] }}"
+
+- set_fact:
+    ec2_private_lb_sidea:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_lb_sidea: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
+- name: Create ec2 private lb on side b
+  include: instances/create_instance.yml
+  vars:
+    my_type: "{{ item['type'] }}"
+    my_group_id: "{{ private_security_group.group_id }}"
+    my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
+    my_instance_role: "{{ item['role'] }}"
+    my_env: "{{ cluster_id }}"
+    my_side: "sideb"
+    my_vpc_subnet_id: "{{ private_subnet_id_sideb }}"
+    my_items: "{{ private_manifest['lb'] }}"
+
+- set_fact:
+    ec2_private_lb_sideb:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_private_lb_sideb: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+
 - set_fact: ec2_private_instances_list="{{ item }}"
   with_items:
     - "{{ ec2_private_masters_sidea }}"
@@ -247,11 +332,14 @@
     - "{{ ec2_private_nodes_sideb }}"
     - "{{ ec2_private_bind_sidea }}"
     - "{{ ec2_private_bind_sideb }}"
+    - "{{ ec2_private_etcd_sidea }}"
+    - "{{ ec2_private_etcd_sideb }}"
+    - "{{ ec2_private_lb_sidea }}"
+    - "{{ ec2_private_lb_sideb }}"
   register: ec2_private_instances_list_result
 
 - set_fact: ec2_private_instances="{{ ec2_private_instances_list_result.results | map(attribute='ansible_facts.ec2_private_instances_list') | list }}"
 
-# TODO: huh, I think we're adding volumes to the bind instances. That's dumb.
 - name: Add volumes to private master and node instances
   ec2_vol:
     instance: "{{ item[0].id }}"
@@ -261,7 +349,7 @@
     device_name: "{{ item[1]['name'] }}"
     delete_on_termination: yes
   with_nested:
-    - "{{ ec2_private_instances }}"
+    - "{{ ec2_private_masters_sidea + ec2_private_masters_sideb + ec2_private_nodes_sidea + ec2_private_nodes_sideb }}"
     - "{{ private_manifest['nodes']['volumes'] }}"
 
 - name: make list of internal ips
