@@ -72,14 +72,14 @@ private_manifest:
       type: gp2
   etcd:
     type: t2.medium
-    role: bind
+    role: etcd
     count: 1
     rootvol:
       size: 10
       type: gp2
   lb:
     type: m4.large
-    role: bind
+    role: lb
     count: 1
     rootvol:
       size: 10
