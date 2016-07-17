@@ -62,6 +62,7 @@
 - name: Create ec2 public bastion instances
   include: instances/create_instance.yml
   vars:
+    my_type: "{{ item['type'] }}"
     my_group_id: "{{ public_security_group.group_id }}"
     my_Name: "{{ cluster_id }}-{{ item['role'] }}-instance"
     my_instance_role: "{{ item['role'] }}"
