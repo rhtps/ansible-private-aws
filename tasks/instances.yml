@@ -72,12 +72,7 @@
     my_items: "{{ public_manifest['bastions'] }}"
 
 - set_fact:
-    ec2_public_instances:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_public_instances: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_public_instances: "{{ ec2_instances }}"
 
 - set_fact:
     bastion_instance_id: "{{ ec2_public_instances[0].id }}"
@@ -124,7 +119,6 @@
     src: ssh_bastion.j2
     dest: ./ssh_bastion.cfg
 
-# TODO when I'm less lazy, paramaterize this better and repeat less code
 - name: Create ec2 private masters on side a
   include: instances/create_instance.yml
   vars:
@@ -138,12 +132,7 @@
     my_items: "{{ private_manifest['masters'] }}"
 
 - set_fact:
-    ec2_private_masters_sidea:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_masters_sidea: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_masters_sidea: "{{ ec2_instances }}"
 
 - name: Create ec2 private masters on side b
   include: instances/create_instance.yml
@@ -158,12 +147,7 @@
     my_items: "{{ private_manifest['masters'] }}"
 
 - set_fact:
-    ec2_private_masters_sideb:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_masters_sideb: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_masters_sideb: "{{ ec2_instances }}"
 
 - name: Create ec2 private nodes on side a
   include: instances/create_instance.yml
@@ -178,12 +162,7 @@
     my_items: "{{ private_manifest['nodes'] }}"
 
 - set_fact:
-    ec2_private_nodes_sidea:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_nodes_sidea: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_nodes_sidea: "{{ ec2_instances }}"
 
 - name: Create ec2 private nodes on side b
   include: instances/create_instance.yml
@@ -198,12 +177,7 @@
     my_items: "{{ private_manifest['nodes'] }}"
 
 - set_fact:
-    ec2_private_nodes_sideb:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_nodes_sideb: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_nodes_sideb: "{{ ec2_instances }}"
 
 - name: Create ec2 private bind on side a
   include: instances/create_instance.yml
@@ -218,12 +192,7 @@
     my_items: "{{ private_manifest['bind'] }}"
 
 - set_fact:
-    ec2_private_bind_sidea:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_bind_sidea: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_bind_sidea: "{{ ec2_instances }}"
 
 - name: Create ec2 private bind on side b
   include: instances/create_instance.yml
@@ -238,12 +207,7 @@
     my_items: "{{ private_manifest['bind'] }}"
 
 - set_fact:
-    ec2_private_bind_sideb:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_bind_sideb: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_bind_sideb: "{{ ec2_instances }}"
 
 - name: Create ec2 private etcd on side a
   include: instances/create_instance.yml
@@ -258,12 +222,7 @@
     my_items: "{{ private_manifest['etcd'] }}"
 
 - set_fact:
-    ec2_private_etcd_sidea:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_etcd_sidea: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_etcd_sidea: "{{ ec2_instances }}"
 
 - name: Create ec2 private etcd on side b
   include: instances/create_instance.yml
@@ -278,12 +237,7 @@
     my_items: "{{ private_manifest['etcd'] }}"
 
 - set_fact:
-    ec2_private_etcd_sideb:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_etcd_sideb: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_etcd_sideb: "{{ ec2_instances }}"
 
 - name: Create ec2 private lb on side a
   include: instances/create_instance.yml
@@ -298,12 +252,7 @@
     my_items: "{{ private_manifest['lb'] }}"
 
 - set_fact:
-    ec2_private_lb_sidea:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_lb_sidea: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_lb_sidea: "{{ ec2_instances }}"
 
 - name: Create ec2 private lb on side b
   include: instances/create_instance.yml
@@ -318,12 +267,7 @@
     my_items: "{{ private_manifest['lb'] }}"
 
 - set_fact:
-    ec2_private_lb_sideb:  "{{ ec2.results[0].instances }}"
-  when: ec2.results[0].instances is defined and ec2.results[0].instances
-
-- set_fact:
-    ec2_private_lb_sideb: "{{ ec2.results[0].tagged_instances }}"
-  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
+    ec2_private_lb_sideb: "{{ ec2_instances }}"
 
 - set_fact: ec2_private_instances_list="{{ item }}"
   with_items:

@@ -28,3 +28,11 @@
   with_items:
     - "{{ my_items }}"
   register: ec2
+
+- set_fact:
+    ec2_instances:  "{{ ec2.results[0].instances }}"
+  when: ec2.results[0].instances is defined and ec2.results[0].instances
+
+- set_fact:
+    ec2_instances: "{{ ec2.results[0].tagged_instances }}"
+  when: ec2.results[0].tagged_instances is defined and ec2.results[0].tagged_instances
