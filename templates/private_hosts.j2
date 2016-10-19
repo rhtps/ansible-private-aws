@@ -5,7 +5,7 @@
 
 [bastions]
 {% for ip in ec2_public_instances %}
-{{ ip.private_ip }}
+{{ ip.private_ip_address }}
 {% endfor %}
 
 [nodes]
